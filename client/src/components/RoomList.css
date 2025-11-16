@@ -1,0 +1,85 @@
+.room-list {
+  width: 240px;
+  background: #2c2f33;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-list-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #23272a;
+}
+
+.room-list-header h3 {
+  margin: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #8e9297;
+  font-weight: 600;
+}
+
+.room-list-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 2px;
+}
+
+.room-item:hover {
+  background: #36393f;
+}
+
+.room-item.active {
+  background: #5865f2;
+}
+
+.room-icon {
+  font-size: 18px;
+  color: #8e9297;
+}
+
+.room-item.active .room-icon {
+  color: white;
+}
+
+.room-name {
+  font-size: 15px;
+  color: #dcddde;
+}
+
+.room-item.active .room-name {
+  color: white;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .room-list {
+    width: 200px;
+  }
+}
+
+
+.unread-badge {
+  background: #f44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.room-item.active .unread-badge {
+  display: none;
+}

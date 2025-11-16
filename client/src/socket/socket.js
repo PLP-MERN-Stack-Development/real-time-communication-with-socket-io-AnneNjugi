@@ -21,6 +21,10 @@ export const useSocket = () => {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [currentRoom, setCurrentRoom] = useState('general');
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
 
   // Connect to socket server
   const connect = (username) => {
@@ -48,6 +52,43 @@ export const useSocket = () => {
   // Set typing status
   const setTyping = (isTyping) => {
     socket.emit('typing', isTyping);
+  };
+
+  // Join a room
+  const joinRoom = (roomId) => {
+    socket.emit('join_room', roomId);
+    setCurrentRoom(roomId);
+    setMessages([]);
+  };
+
+  // Add reaction to message
+  const addReaction = (messageId, emoji, room) => {
+    socket.emit('add_reaction', { messageId, emoji, room });
+  };
+
+  // Send file
+  const sendFile = (fileName, fileData, fileType, room) => {
+    socket.emit('send_file', { fileName, fileData, fileType, room });
+  };
+
+  // Mark message as read
+  const markAsRead = (messageId, room) => {
+    socket.emit('mark_as_read', { messageId, room });
+  };
+
+  // Change user status
+  const changeStatus = (status) => {
+    socket.emit('change_status', status);
+  };
+
+  // Search messages
+  const searchMessages = (query, room) => {
+    socket.emit('search_messages', { query, room });
+  };
+
+  // Load more messages
+  const loadMoreMessages = (room, beforeMessageId) => {
+    socket.emit('load_more_messages', { room, before: beforeMessageId });
   };
 
   // Socket event listeners
@@ -108,6 +149,44 @@ export const useSocket = () => {
       setTypingUsers(users);
     };
 
+    // Room events
+    const onRoomList = (roomList) => {
+      setRooms(roomList);
+    };
+
+    const onRoomMessages = ({ room, messages: roomMessages }) => {
+      setMessages(roomMessages);
+    };
+
+    // Reaction events
+    const onReactionAdded = ({ messageId, reactions }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, reactions } : msg
+        )
+      );
+    };
+
+    // Read receipt events
+    const onMessageRead = ({ messageId, readBy }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, readBy } : msg
+        )
+      );
+    };
+
+    // Search events
+    const onSearchResults = ({ results }) => {
+      setSearchResults(results);
+    };
+
+    // Pagination events
+    const onOlderMessages = ({ messages: olderMessages, hasMore }) => {
+      setMessages((prev) => [...olderMessages, ...prev]);
+      setHasMoreMessages(hasMore);
+    };
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -117,6 +196,12 @@ export const useSocket = () => {
     socket.on('user_joined', onUserJoined);
     socket.on('user_left', onUserLeft);
     socket.on('typing_users', onTypingUsers);
+    socket.on('room_list', onRoomList);
+    socket.on('room_messages', onRoomMessages);
+    socket.on('reaction_added', onReactionAdded);
+    socket.on('message_read', onMessageRead);
+    socket.on('search_results', onSearchResults);
+    socket.on('older_messages', onOlderMessages);
 
     // Clean up event listeners
     return () => {
@@ -128,6 +213,12 @@ export const useSocket = () => {
       socket.off('user_joined', onUserJoined);
       socket.off('user_left', onUserLeft);
       socket.off('typing_users', onTypingUsers);
+      socket.off('room_list', onRoomList);
+      socket.off('room_messages', onRoomMessages);
+      socket.off('reaction_added', onReactionAdded);
+      socket.off('message_read', onMessageRead);
+      socket.off('search_results', onSearchResults);
+      socket.off('older_messages', onOlderMessages);
     };
   }, []);
 
@@ -138,11 +229,22 @@ export const useSocket = () => {
     messages,
     users,
     typingUsers,
+    rooms,
+    currentRoom,
+    searchResults,
+    hasMoreMessages,
     connect,
     disconnect,
     sendMessage,
     sendPrivateMessage,
     setTyping,
+    joinRoom,
+    addReaction,
+    sendFile,
+    markAsRead,
+    changeStatus,
+    searchMessages,
+    loadMoreMessages,
   };
 };
 
